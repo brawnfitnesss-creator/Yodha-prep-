@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yoddha Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#15171B; --surface:#1E2126; --surface2:#262A31; --border:#31363E;
+  --text:#ECE8E1; --text-dim:#9A9FA8; --text-faint:#5E636C;
+  --brass:#C9A24B; --brass-strong:#E0BE6B;
+  --caution:#C24E3A; --caution-bg:#2B1B17;
+  --amber:#D1A33B; --amber-bg:#2B2417;
+  --safe:#5C8A6B; --safe-bg:#182420;
+  --radius:10px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F1EC; --surface:#FFFFFF; --surface2:#EAE7DF;
+    --border:#DAD5C8; --text:#232019; --text-dim:#6B6558; --text-faint:#A39C8B;
+    --brass:#9C6E1E; --brass-strong:#7A5416;
+    --caution:#A13A28; --caution-bg:#FBE6E1;
+    --amber:#8A6A1E; --amber-bg:#F6EAD2;
+    --safe:#3E6B4C; --safe-bg:#E4EFE7;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171B; --surface:#1E2126; --surface2:#262A31; --border:#31363E;
+  --text:#ECE8E1; --text-dim:#9A9FA8; --text-faint:#5E636C;
+  --brass:#C9A24B; --brass-strong:#E0BE6B;
+  --caution:#C24E3A; --caution-bg:#2B1B17;
+  --amber:#D1A33B; --amber-bg:#2B2417;
+  --safe:#5C8A6B; --safe-bg:#182420;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));
+}
+h1,h2,h3,.display{font-family:'Oswald',sans-serif; letter-spacing:0.01em; margin:0;}
+p{margin:0;}
+::selection{background:var(--brass); color:#15171B;}
+
+.hero{
+  padding:calc(20px + env(safe-area-inset-top,0px)) 18px 18px;
+  background:linear-gradient(180deg, var(--surface2), var(--bg));
+  border-bottom:1px solid var(--border);
+}
+.hero-top{display:flex; justify-content:space-between; align-items:baseline;}
+.brand{font-family:'Oswald'; font-weight:600; font-size:15px; color:var(--brass); letter-spacing:0.06em;}
+.category-tag{font-size:12px; color:var(--text-dim); border:1px solid var(--border); padding:3px 9px; border-radius:20px;}
+.hero-count{display:flex; align-items:flex-end; gap:10px; margin-top:14px;}
+.hero-count .num{font-family:'Oswald'; font-weight:700; font-size:64px; line-height:0.85; color:var(--text);}
+.hero-count .unit{font-size:14px; color:var(--text-dim); padding-bottom:6px;}
+.hero-sub{margin-top:6px; font-size:13.5px; color:var(--text-dim);}
+.hero-badges{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+.phase-pill{display:inline-block; background:var(--surface); border:1px solid var(--border); color:var(--brass); font-size:12.5px; padding:5px 12px; border-radius:20px; font-weight:600;}
+.phase-pill.acwr-ok{color:var(--safe);}
+.phase-pill.acwr-caution{color:var(--amber);}
+.phase-pill.acwr-high{color:var(--caution);}
+
+.tabbar{
+  position:fixed; bottom:0; left:0; right:0;
+  display:flex; background:var(--surface); border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom,0px); z-index:50;
+}
+.tabbtn{
+  flex:1; background:none; border:none; color:var(--text-faint); font-family:'Inter'; font-size:11.5px;
+  padding:10px 4px 8px; cursor:pointer; font-weight:600; letter-spacing:0.01em;
+}
+.tabbtn.active{color:var(--brass);}
+.tabbtn .dot{display:block; width:5px; height:5px; border-radius:50%; background:transparent; margin:0 auto 5px;}
+.tabbtn.active .dot{background:var(--brass);}
+
+.view{display:none; padding:16px; max-width:640px; margin:0 auto;}
+.view.active{display:block;}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px;}
+.card h2{font-size:19px; font-weight:600;}
+.card h3{font-size:15px; font-weight:600; color:var(--text);}
+.muted{color:var(--text-dim); font-size:13px;}
+.tiny{color:var(--text-faint); font-size:11.5px; line-height:1.5;}
+.row-between{display:flex; justify-content:space-between; align-items:center;}
+
+.exercise{border-top:1px solid var(--border); padding:12px 0;}
+.exercise:first-of-type{border-top:none; padding-top:6px;}
+.exercise-name{font-weight:600; font-size:14.5px; display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+.exercise-detail{font-size:13.5px; color:var(--text-dim); margin-top:3px; line-height:1.4;}
+.badge{font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:5px; letter-spacing:0.02em;}
+.badge.caution{background:var(--caution-bg); color:var(--caution);}
+.badge.sub{background:var(--safe-bg); color:var(--safe);}
+.badge.calc{background:var(--surface2); color:var(--brass); border:1px solid var(--border);}
+.exercise-controls{display:flex; gap:8px; margin-top:8px; align-items:center;}
+.chk{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-dim); cursor:pointer;}
+.chk input{width:17px; height:17px; accent-color:var(--brass);}
+.actual-input{flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:13px; padding:6px 9px; font-family:'Inter';}
+.actual-input::placeholder{color:var(--text-faint);}
+
+button.primary{
+  background:var(--brass); color:#171512; border:none; border-radius:8px;
+  font-family:'Inter'; font-weight:700; font-size:14px; padding:12px 18px; cursor:pointer; width:100%;
+}
+button.primary:disabled{opacity:0.5;}
+button.secondary{
+  background:none; border:1px solid var(--border); color:var(--text); border-radius:8px;
+  font-family:'Inter'; font-weight:600; font-size:13.5px; padding:10px 14px; cursor:pointer; width:100%;
+}
+button.chip{background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; font-size:12.5px; padding:9px 6px; cursor:pointer;}
+button.chip.active{background:var(--brass); color:#171512; border-color:var(--brass);}
+
+.field{margin-bottom:12px;}
+.field label{font-size:12.5px; color:var(--text-dim); display:block; margin-bottom:5px;}
+.field input[type=number], .field input[type=text]{
+  width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text);
+  font-family:'Inter'; font-size:14px; padding:10px 11px;
+}
+.field-row{display:flex; gap:10px;}
+.field-row .field{flex:1;}
+
+.slider-row{margin:12px 0;}
+.slider-row label{font-size:13px; color:var(--text-dim); display:block; margin-bottom:8px;}
+input[type=range]{width:100%; accent-color:var(--brass);}
+.slider-value{font-family:'Oswald'; font-size:22px; font-weight:600; color:var(--brass);}
+textarea{
+  width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text);
+  font-family:'Inter'; font-size:13.5px; padding:10px; margin-top:8px; resize:vertical; min-height:60px;
+}
+
+.advice-card{border-left:3px solid var(--brass); background:var(--surface2); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:10px;}
+.advice-card.caution{border-left-color:var(--caution);}
+.advice-card.amber{border-left-color:var(--amber);}
+.advice-card .tag{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--brass);}
+.advice-card.caution .tag{color:var(--caution);}
+.advice-card.amber .tag{color:var(--amber);}
+.advice-card p{margin-top:6px; font-size:13.5px; line-height:1.5;}
+
+.morning-check{background:var(--amber-bg); border:1px solid var(--amber); border-radius:8px; padding:13px; margin-bottom:12px;}
+.morning-check .tag{font-size:11px; font-weight:700; text-transform:uppercase; color:var(--amber);}
+.morning-check p{font-size:13.5px; margin-top:6px; line-height:1.5;}
+.morning-check .opts{display:flex; gap:7px; margin-top:10px;}
+.morning-check .opts button{flex:1;}
+
+.week-day{display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--border);}
+.week-day:first-of-type{border-top:none;}
+.week-day .idx{width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Oswald'; font-size:12px; font-weight:600; background:var(--surface2); color:var(--text-dim); flex-shrink:0;}
+.week-day.done .idx{background:var(--safe); color:#0d1a12;}
+.week-day.today .idx{background:var(--brass); color:#171512;}
+.week-day .info{flex:1;}
+.week-day .title{font-size:14px; font-weight:600;}
+.week-day .sub{font-size:12px; color:var(--text-dim);}
+
+.zone-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-top:1px solid var(--border); gap:10px;}
+.zone-row:first-of-type{border-top:none;}
+.zone-row .zn{font-size:14px; font-weight:600;}
+.zone-row .zt{font-size:12.5px; color:var(--text-dim); text-align:right;}
+.zone-row a{color:var(--brass); font-size:11.5px; text-decoration:none;}
+
+.bar-row{margin:12px 0;}
+.bar-row .lbl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;}
+.bar-row .lbl b{color:var(--text);}
+.bar-track{height:9px; background:var(--surface2); border-radius:6px; overflow:hidden; border:1px solid var(--border);}
+.bar-fill{height:100%; background:var(--brass); border-radius:6px;}
+
+.gauge-wrap{margin-top:8px;}
+.gauge-track{position:relative; height:14px; border-radius:8px; overflow:hidden; display:flex; border:1px solid var(--border);}
+.gauge-seg{height:100%;}
+.gauge-marker{position:absolute; top:-4px; width:3px; height:22px; background:var(--text); border-radius:2px;}
+.gauge-labels{display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-top:5px;}
+
+.timer-fab{
+  position:fixed; right:16px; bottom:calc(84px + env(safe-area-inset-bottom,0px));
+  width:52px; height:52px; border-radius:50%; background:var(--brass); color:#171512;
+  border:none; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.35); z-index:40; cursor:pointer;
+}
+.timer-panel{
+  position:fixed; left:16px; right:16px; bottom:calc(148px + env(safe-area-inset-bottom,0px));
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; z-index:41; display:none;
+}
+.timer-panel.open{display:block;}
+.timer-display{font-family:'Oswald'; font-size:44px; text-align:center; margin:8px 0; font-weight:600;}
+.timer-presets{display:flex; gap:7px; margin-bottom:10px; flex-wrap:wrap;}
+.timer-presets button{flex:1; min-width:56px; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:7px 4px; font-size:12px; cursor:pointer;}
+.timer-actions{display:flex; gap:8px; margin-top:10px;}
+.timer-actions button{flex:1;}
+
+.empty{text-align:center; padding:30px 10px; color:var(--text-dim); font-size:13.5px;}
+.streak-row{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+.stat-box{flex:1; min-width:90px; background:var(--surface2); border-radius:8px; padding:12px; text-align:center;}
+.stat-box .n{font-family:'Oswald'; font-size:26px; font-weight:700; color:var(--brass);}
+.stat-box .l{font-size:11px; color:var(--text-dim); margin-top:2px;}
+
+.pain-chart{display:flex; align-items:flex-end; gap:4px; height:80px; margin-top:10px;}
+.pain-bar{flex:1; background:var(--safe); border-radius:3px 3px 0 0; min-height:3px;}
+.pain-bar.amber{background:var(--amber);}
+.pain-bar.high{background:var(--caution);}
+
+.toggle-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border);}
+.toggle-row:first-of-type{border-top:none;}
+.switch{position:relative; width:44px; height:25px; flex-shrink:0;}
+.switch input{opacity:0; width:0; height:0;}
+.slider-toggle{position:absolute; inset:0; background:var(--surface2); border:1px solid var(--border); border-radius:20px; cursor:pointer; transition:0.2s;}
+.slider-toggle:before{content:""; position:absolute; width:19px; height:19px; left:2px; top:2px; background:var(--text-dim); border-radius:50%; transition:0.2s;}
+input:checked + .slider-toggle{background:var(--brass);}
+input:checked + .slider-toggle:before{transform:translateX(19px); background:#171512;}
+
+.note-banner{font-size:12px; color:var(--text-faint); line-height:1.5; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);}
+a{color:var(--brass);}
+select{width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Inter'; font-size:14px; padding:10px 11px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-top">
+    <span class="brand">YODDHA COACH</span>
+    <span class="category-tag" id="catTag">Male Doubles</span>
+  </div>
+  <div class="hero-count">
+    <span class="num" id="daysNum">—</span>
+    <span class="unit">days to Mumbai<br>21–22 Nov 2026</span>
+  </div>
+  <div class="hero-sub" id="weekSub">Loading…</div>
+  <div class="hero-badges">
+    <span class="phase-pill" id="phasePill">—</span>
+    <span class="phase-pill" id="acwrPill" title="Acute:Chronic Workload Ratio">ACWR —</span>
+  </div>
+  <div class="muted" id="modeBanner" style="display:none; margin-top:10px; font-size:11.5px; line-height:1.5;"></div>
+</div>
+
+<!-- TODAY -->
+<div class="view active" id="view-today">
+  <div id="morningCheckSlot"></div>
+  <div class="card" id="todayCard"></div>
+</div>
+
+<!-- WEEK -->
+<div class="view" id="view-week">
+  <div class="card">
+    <div class="row-between"><h2 id="weekTitle">This week</h2></div>
+    <div id="weekList"></div>
+  </div>
+</div>
+
+<!-- ZONES -->
+<div class="view" id="view-zones">
+  <div class="card">
+    <h2>The 7 zones</h2>
+    <p class="muted" style="margin-top:4px;">Race day targets — Male Doubles. 700m run between each zone.</p>
+    <div id="zoneList"></div>
+    <div class="note-banner">Videos can't be embedded inside this app (sandbox restrictions), so each zone links to a YouTube search for form cues instead — opens in a new tab.</div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="view" id="view-progress">
+  <div class="card">
+    <h2>Race readiness</h2>
+    <p class="muted" style="margin-top:4px;">Your latest tested/logged number vs. race target, per zone</p>
+    <div id="readinessBars"></div>
+    <button class="secondary" id="retestBtn" style="margin-top:8px;">Log a retest</button>
+    <div id="retestForm" style="display:none; margin-top:10px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>Training load (ACWR)</h2>
+    <p class="muted" style="margin-top:4px;">Acute (7-day) load vs. chronic (28-day) average — session-RPE × duration, per Foster's training-load model. A guide, not a guarantee.</p>
+    <div class="gauge-wrap" id="acwrGauge"></div>
+  </div>
+
+  <div class="card">
+    <h2>Progress</h2>
+    <div class="streak-row" id="statRow"></div>
+    <h3>Discomfort trend</h3>
+    <p class="muted">Pushing/overhead pain, last logged sessions (0–2 safe · 3–5 monitor · 6+ stop)</p>
+    <div class="pain-chart" id="painChart"></div>
+    <div id="progressList" style="margin-top:14px;"></div>
+    <button class="secondary" id="exportBtn" style="margin-top:14px;">Export log as CSV</button>
+  </div>
+
+  <div class="card">
+    <h2>Settings</h2>
+    <div class="toggle-row">
+      <div><h3>Overhead/push cleared</h3><p class="muted">Turn on once your physio confirms pushing is pain-free</p></div>
+      <label class="switch"><input type="checkbox" id="clearedToggle"><span class="slider-toggle"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><h3>Caution flag active</h3><p class="muted">Auto-set by the pain-monitoring model. Turn off once resolved.</p></div>
+      <label class="switch"><input type="checkbox" id="cautionToggle"><span class="slider-toggle"></span></label>
+    </div>
+    <button class="secondary" id="editProfileBtn" style="margin-top:14px;">Edit my baseline numbers</button>
+    <button class="secondary" id="resetBtn" style="margin-top:10px;">Reset all data</button>
+  </div>
+</div>
+
+<div class="timer-fab" id="timerFab">⏱</div>
+<div class="timer-panel" id="timerPanel">
+  <div class="timer-display" id="timerDisplay">00:00</div>
+  <div class="timer-presets">
+    <button data-s="30">30s</button><button data-s="60">60s</button><button data-s="90">90s</button><button data-s="120">2m</button><button data-s="300">5m</button>
+  </div>
+  <div class="timer-actions">
+    <button class="secondary" id="timerStart">Start</button>
+    <button class="secondary" id="timerReset">Reset</button>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tabbtn active" data-view="today"><span class="dot"></span>Today</button>
+  <button class="tabbtn" data-view="week"><span class="dot"></span>Week</button>
+  <button class="tabbtn" data-view="zones"><span class="dot"></span>Zones</button>
+  <button class="tabbtn" data-view="progress"><span class="dot"></span>Progress</button>
+</div>
+
+<script>
+(function(){
+
+// ================= CONFIG =================
+const RACE_DATE = new Date('2026-11-21T00:00:00+05:30');
+const START_DATE = new Date('2026-09-23T00:00:00+05:30');
+
+const RACE_ZONES = [
+  {key:'row', n:'1. Rowing', target:null, spec:'1000m, Resistance 7', yt:'rowing machine pacing technique 1000m'},
+  {key:'sledPush', n:'2. Sled Push', target:150, unit:'kg', spec:'50m, 150kg', yt:'sled push technique heavy load', pushRisk:true},
+  {key:'sledPull', n:'3. Sled Pull', target:100, unit:'kg', spec:'50m, 100kg (rope)', yt:'sled rope pull technique'},
+  {key:'kbCarry', n:'4. Kettlebell Carry', target:24, unit:'kg/hand', spec:'200m, 2×24kg', yt:'farmers carry kettlebell technique'},
+  {key:'boxJump', n:'5. Box Jump', target:60, unit:'cm', spec:'30 reps, 60cm', yt:'box jump technique soft landing'},
+  {key:'lungeWalk', n:'6. Lunge Walk', target:20, unit:'kg', spec:'100m, 20kg', yt:'weighted walking lunge technique'},
+  {key:'wallBall', n:'7. Wall Ball', target:6, unit:'kg', spec:'75 reps, 6kg, 9ft target', yt:'wall ball throw technique crossfit', pushRisk:true}
+];
+function zoneCfg(key){ return RACE_ZONES.find(z=>z.key===key); }
+
+// Estimated session duration (min) for training-load calc (RPE x duration = Foster's session-RPE method)
+const DURATION_EST = {pull_engine:50, legs_carry:45, run_base:25, run_build:35, run_peak:40, push_gate:40, simulation:45, rest:0, assessment:35};
+
+function dstr(d){ return d.toISOString().slice(0,10); }
+function addDays(d,n){ return new Date(d.getTime()+n*86400000); }
+function dayIndexFromStart(d){ return Math.floor((d - START_DATE)/86400000); }
+function fmtDate(d){ return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'}); }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function roundTo(x,step){ return Math.round(x/step)*step; }
+
+// ================= INDIVIDUALIZED LOAD MODEL =================
+// Every working load is interpolated from the person's OWN tested baseline
+// toward the race target, reaching the target by the peak week (index 7),
+// then holding/tapering. This replaces generic % assumptions with real data.
+function zoneLoad(zoneKey, weekIndex, profile){
+  const cfg = zoneCfg(zoneKey);
+  if(!cfg || cfg.target==null) return null;
+  const baseline = (profile.baselines && profile.baselines[zoneKey]!=null) ? profile.baselines[zoneKey] : cfg.target*0.35;
+  const wi = clamp(weekIndex,0,7);
+  let frac = wi/7;
+  if(weekIndex>7) frac = 0.7; // taper below peak
+  let val = baseline + (cfg.target-baseline)*frac;
+  val = clamp(val, Math.min(baseline,val), cfg.target);
+  const step = zoneKey==='boxJump' ? 5 : (zoneKey==='kbCarry' ? 2 : (zoneKey==='lungeWalk' ? 2.5 : 5));
+  return Math.max(zoneKey==='lungeWalk'?0:step, roundTo(val, step));
+}
+
+function phaseForWeekIndex(wi){
+  if(wi<2) return 'Reintegration';
+  if(wi<4) return 'Base Build';
+  if(wi<6) return 'Build';
+  if(wi<8) return 'Peak';
+  return 'Taper';
+}
+
+// ================= SESSION GENERATORS =================
+function pullEngineDay(wi, profile){
+  const sledPull = zoneLoad('sledPull', wi, profile);
+  return {
+    type:'pull_engine', title:'Pull & Engine', focus:'Rowing endurance + pull-pattern strength (shoulder-safe)',
+    exercises:[
+      {name:'Row intervals', detail:'6 × 500m at moderate-hard pace, 90s rest between'},
+      {name:'Sled pull', detail:sledPull+'kg rope pull × 4 reps of 50m, full recovery between reps', calc:true},
+      {name:'Band pull-apart', detail:'3 × 20, slow and controlled, light band'},
+      {name:'Serratus wall slide', detail:'3 × 12, wall contact throughout'},
+      {name:'Prone Y-T-W raise', detail:'2 rounds × 10 reps each position, no weight or very light'}
+    ]
+  };
+}
+function legsCarryDay(wi, profile){
+  const kb = zoneLoad('kbCarry', wi, profile);
+  const lunge = zoneLoad('lungeWalk', wi, profile);
+  const box = zoneLoad('boxJump', wi, profile);
+  return {
+    type:'legs_carry', title:'Legs & Carry', focus:'Kettlebell carry, lunge walk, box jump (shoulder-safe)',
+    exercises:[
+      {name:'Kettlebell carry', detail:kb+'kg per hand, side carry (not rack), 4 × 50m', calc:true},
+      {name:'Weighted lunge walk', detail:(lunge>0?lunge+'kg loaded, ':'Bodyweight, ')+'4 × 25m, controlled tempo', calc:true},
+      {name:'Box jump', detail:box+'cm box, 4 × 8 reps, soft landings', calc:true},
+      {name:'Core — dead bug', detail:'3 × 12 per side'}
+    ]
+  };
+}
+function runDay(wi, profile){
+  const paceBase = (profile.run && profile.run.paceKmh) || 7.5;
+  let main, durKey;
+  if(wi<2){ main={name:'Continuous run', detail:'20 min continuous at ~'+paceBase+'km/h, conversational effort — your current baseline, not pushing pace.'}; durKey='run_base'; }
+  else if(wi<4){ main={name:'Continuous run + strides', detail:'25 min continuous at '+paceBase+'–'+(paceBase+0.5)+'km/h, then 4 × 20m relaxed strides.'}; durKey='run_build'; }
+  else if(wi<6){ main={name:'700m repeats', detail:'5 × 700m moderately hard, 90s walk recovery — first race-spec running.'}; durKey='run_build'; }
+  else if(wi<8){ main={name:'700m repeats — race spec', detail:'7 × 700m at target race pace, 60s recovery — mirrors race-day running exactly.'}; durKey='run_peak'; }
+  else{ main={name:'700m repeats — taper', detail:'3 × 700m at race pace, easy otherwise.'}; durKey='run_build'; }
+  return {
+    type:'run', title:'Run', focus:'Progression built from your tested baseline of '+ (profile.run?profile.run.minutes:20) +' min @ '+paceBase+'km/h', durKey:durKey,
+    exercises:[main, {name:'Easy walk cooldown', detail:'5 min easy walk'}, {name:'Core', detail:'3 × 12/side dead bug or 3 × 40s plank'}]
+  };
+}
+function easyRunDay(profile){
+  const paceBase = (profile.run && profile.run.paceKmh) || 7.5;
+  return {
+    type:'run', title:'Easy Run (frequency add-on)', focus:'Short, easy, non-progressive — just a second weekly run exposure', durKey:'run_base',
+    exercises:[{name:'Easy run', detail:'15–20 min at '+paceBase+'km/h, fully conversational. No progression here — this day is just frequency.'}]
+  };
+}
+function pushGateDay(wi, profile, cleared, caution){
+  if(cleared && !caution){
+    const push = zoneLoad('sledPush', wi, profile);
+    const wallCfg = profile.baselines && profile.baselines.wallBall;
+    const wallKg = zoneLoad('wallBall', wi, profile) || 4;
+    return {
+      type:'push_gate', title:'Push & Power', focus:'Sled push + wall ball — cleared for load',
+      exercises:[
+        {name:'Sled push', detail:push+'kg × 4 reps of 50m', caution:true, calc:true},
+        {name:'Wall ball throw', detail:wallKg+'kg, controlled catch each rep, build reps as tolerated', caution:true, calc:true},
+        {name:'Shoulder mobility cooldown', detail:'Band external rotation + sleeper stretch, light'}
+      ]
+    };
+  }
+  return {
+    type:'push_gate', title:'Push & Power — substituted', focus:'Push/overhead not cleared — pull + scapular strength instead',
+    exercises:[
+      {name:'Push work substituted', detail:'Clearance not confirmed. Swapping in extra pull and scapular strength.', substitute:true},
+      {name:'Inverted row / band row', detail:'4 × 12, squeeze shoulder blades together'},
+      {name:'Serratus punch', detail:'3 × 15'},
+      {name:'Side-lying external rotation', detail:'3 × 15/side, light dumbbell'},
+      {name:'Lower trap raise (prone, thumbs up)', detail:'3 × 12'}
+    ]
+  };
+}
+function simulationDay(wi, profile, cleared, caution){
+  if(wi<2){
+    return {type:'simulation', title:'Skills Circuit (light)', focus:'Technique walk-through, no push/overhead',
+      exercises:[{name:'Light skills circuit', detail:'700m run → light sled pull → light KB carry → box step-up ×10 → 700m run → lunge walk 30m. Walk-through pace.'}]};
+  }
+  const push = zoneLoad('sledPush', wi, profile), pull = zoneLoad('sledPull', wi, profile), kb = zoneLoad('kbCarry', wi, profile), box = zoneLoad('boxJump', wi, profile), lunge = zoneLoad('lungeWalk', wi, profile), wall = zoneLoad('wallBall', wi, profile);
+  let zones = ['700m run','Row 1000m','700m run','Sled push '+push+'kg/50m','700m run','Sled pull '+pull+'kg/50m','700m run','KB carry '+kb+'kg×2/200m','700m run','Box jump '+box+'cm ×30','700m run','Lunge walk '+(lunge||0)+'kg/100m','700m run','Wall ball '+wall+'kg ×reps'];
+  let note='';
+  if(!cleared || caution){
+    zones = zones.filter(z=>!z.startsWith('Sled push') && !z.startsWith('Wall ball'));
+    zones.push('extra pull-engine finisher (sub for push/wall ball)');
+    note=' Push/overhead zones substituted — not cleared.';
+  }
+  return {type:'simulation', title:'Zone Simulation', focus:'Full race-order circuit, individualized loads'+note,
+    exercises:[{name:'Full zone simulation, timed', detail:zones.join(' → ')}]};
+}
+const restDay = {type:'rest', title:'Rest / Recovery', focus:'Full rest or an easy 20–30 min walk',
+  exercises:[{name:'Rest', detail:'No training today. Continue your prescribed shoulder rehab drills separately.'}]};
+
+function generateDay(dayIndex, profile, cleared, caution){
+  const wi = Math.floor(dayIndex/7);
+  const dow = ((dayIndex%7)+7)%7;
+  let session;
+  if(dow===0) session = pullEngineDay(wi, profile);
+  else if(dow===1) session = legsCarryDay(wi, profile);
+  else if(dow===2) session = easyRunDay(profile);
+  else if(dow===3) session = runDay(wi, profile);
+  else if(dow===4) session = pushGateDay(wi, profile, cleared, caution);
+  else if(dow===5) session = simulationDay(wi, profile, cleared, caution);
+  else session = restDay;
+  session.phase = phaseForWeekIndex(wi);
+  session.weekNumber = wi+1;
+  session.date = addDays(START_DATE, dayIndex);
+  session.durationMin = DURATION_EST[session.durKey || session.type] ?? 40;
+  return session;
+}
+
+// ================= RUNTIME / STORAGE FALLBACK =================
+function hasClaudeRuntime(){ return typeof claude !== 'undefined' && claude && typeof claude.use === 'function'; }
+function makeLocalDb(){
+  function read(){ try{ return JSON.parse(localStorage.getItem('yoddha_store')||'{}'); }catch(e){ return {}; } }
+  function write(o){ try{ localStorage.setItem('yoddha_store', JSON.stringify(o)); }catch(e){} }
+  return {
+    doc(path){
+      return {
+        async get(){ const s=read(); return {exists: Object.prototype.hasOwnProperty.call(s,path), data:()=>s[path]}; },
+        async set(val){ const s=read(); s[path]=val; write(s); return true; },
+        async delete(){ const s=read(); delete s[path]; write(s); return true; }
+      };
+    },
+    collection(name){
+      const self = {
+        orderBy(){ return self; }, limit(){ return self; },
+        async get(){
+          const s = read();
+          const docs = Object.keys(s).filter(k=>k.startsWith(name+'/'))
+            .map(k=>({id:k.slice(name.length+1), data:()=>s[k]}))
+            .sort((a,b)=>String(a.data().savedAt||'').localeCompare(String(b.data().savedAt||''))).reverse();
+          return {docs};
+        }
+      };
+      return self;
+    }
+  };
+}
+function localAdvice(data){
+  const note=(data.note||'').toLowerCase();
+  const red=['sharp','numb','unstable','giving way','worse','locking',"can't lift","cant lift",'weak grip'];
+  const flagged = red.some(w=>note.includes(w));
+  if(data.pain>=6 || flagged) return {status:'stop_pushing', flagCaution:true, message:'Pain-monitoring model: 6+/10 means stop pushing/overhead work and check with your physio before your next push session. (Local rule-based check.)'};
+  if(data.pain>=3) return {status:'monitor', flagCaution:false, message:'Pain-monitoring model: 3–5/10 is the acceptable-but-monitor zone. Check tomorrow morning before moving — if it hasn\'t settled back to baseline, we back off. (Local rule-based check.)'};
+  return {status:'good', flagCaution:false, message:'0–2/10 is the safe zone in the pain-monitoring model. Keep progressing as planned. (Local rule-based check.)'};
+}
+
+// ================= STATE =================
+let db=null, sample=null, downloads=null, usingLocalFallback=false;
+let profile = null; // {age, weight, run:{paceKmh,minutes}, baselines:{sledPull,kbCarry,boxJump,lungeWalk,wallBall,sledPush}, painBaseline}
+let settings = {clearedOverhead:false, cautionFlag:false};
+let currentSession = null;
+
+async function init(){
+  if(hasClaudeRuntime()){
+    try{ db = await claude.use('db'); }catch(e){ db=null; }
+    try{ sample = await claude.use('sample'); }catch(e){ sample=null; }
+    try{ downloads = await claude.use('downloads'); }catch(e){ downloads=null; }
+  }
+  if(!db){ db = makeLocalDb(); usingLocalFallback = true; }
+  const banner = document.getElementById('modeBanner');
+  if(usingLocalFallback || !sample){
+    banner.style.display='block';
+    banner.textContent = usingLocalFallback
+      ? 'Local mode — logs stay on this device, coach uses a rule-based check instead of full AI. Open via the claude.ai link for cloud sync + real AI.'
+      : 'AI coach unavailable right now — using a local rule-based check instead.';
+  }
+
+  try{ const s = await db.doc('settings/main').get(); if(s.exists) settings = Object.assign(settings, s.data()); }catch(e){}
+  try{ const p = await db.doc('profile/main').get(); if(p.exists) profile = p.data(); }catch(e){}
+
+  document.getElementById('clearedToggle').checked = !!settings.clearedOverhead;
+  document.getElementById('cautionToggle').checked = !!settings.cautionFlag;
+
+  document.getElementById('clearedToggle').addEventListener('change', async e=>{ settings.clearedOverhead=e.target.checked; try{await db.doc('settings/main').set(settings);}catch(err){} renderToday(); renderWeek(); });
+  document.getElementById('cautionToggle').addEventListener('change', async e=>{ settings.cautionFlag=e.target.checked; try{await db.doc('settings/main').set(settings);}catch(err){} renderToday(); renderWeek(); });
+  document.getElementById('editProfileBtn').addEventListener('click', renderAssessment);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+  renderHero();
+  if(!profile){ renderAssessment(); } else { await renderToday(); }
+  renderWeek();
+  renderZones();
+  renderProgress();
+}
+
+function renderHero(){
+  const now = new Date();
+  const daysLeft = Math.max(0, Math.ceil((RACE_DATE-now)/86400000));
+  document.getElementById('daysNum').textContent = daysLeft;
+  let di = dayIndexFromStart(now); if(di<0) di=0;
+  const wi = Math.floor(di/7);
+  document.getElementById('weekSub').textContent = dayIndexFromStart(now)<0 ? 'Program starts '+fmtDate(START_DATE) : 'Week '+(wi+1)+' · '+fmtDate(now);
+  document.getElementById('phasePill').textContent = phaseForWeekIndex(wi)+' phase';
+}
+
+// ================= ASSESSMENT (BASELINE TESTING) =================
+function renderAssessment(){
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelector('[data-view="today"]').classList.add('active');
+  document.getElementById('view-today').classList.add('active');
+
+  const p = profile || {baselines:{}, run:{}};
+  const card = document.getElementById('todayCard');
+  card.innerHTML =
+    '<h2>Baseline testing session</h2>'+
+    '<p class="muted" style="margin-top:4px;">Every load in this program is calculated from these numbers, progressing toward race targets — not a generic guess. Test sub-maximally, stay pain-free, and be honest.</p>'+
+    '<div class="field" style="margin-top:14px;"><label>Sled pull you can do 50m with, pain-free (kg)</label><input type="number" id="f_sledPull" value="'+(p.baselines.sledPull??'')+'" placeholder="e.g. 40"></div>'+
+    '<div class="field"><label>Kettlebell carry, per hand, 50m pain-free (kg)</label><input type="number" id="f_kbCarry" value="'+(p.baselines.kbCarry??'')+'" placeholder="e.g. 10"></div>'+
+    '<div class="field"><label>Box height you can jump, 5 clean reps (cm)</label><input type="number" id="f_boxJump" value="'+(p.baselines.boxJump??'')+'" placeholder="e.g. 40"></div>'+
+    '<div class="field"><label>Lunge walk load, 25m controlled (kg, 0 if bodyweight)</label><input type="number" id="f_lungeWalk" value="'+(p.baselines.lungeWalk??'')+'" placeholder="e.g. 0"></div>'+
+    '<div class="field-row"><div class="field"><label>Comfortable run pace (km/h)</label><input type="number" step="0.1" id="f_paceKmh" value="'+(p.run.paceKmh??7.5)+'"></div>'+
+    '<div class="field"><label>For how long (min)</label><input type="number" id="f_runMin" value="'+(p.run.minutes??20)+'"></div></div>'+
+    '<div class="field-row"><div class="field"><label>Age</label><input type="number" id="f_age" value="'+(p.age??'')+'"></div>'+
+    '<div class="field"><label>Bodyweight (kg)</label><input type="number" id="f_weight" value="'+(p.weight??'')+'"></div></div>'+
+    '<div class="field"><label>Pushing-pattern pain right now, at rest (0–10)</label><input type="number" min="0" max="10" id="f_painBaseline" value="'+(p.painBaseline??1)+'"></div>'+
+    '<button class="primary" id="saveProfileBtn" style="margin-top:6px;">Save baseline & build my plan</button>'+
+    '<div class="tiny" style="margin-top:12px;">Leave a field blank if you haven\'t tested it — sled push and wall ball aren\'t asked here since they\'re gated behind your physio clearance; you\'ll test those once cleared, via "Log a retest" in Progress.</div>';
+
+  document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
+    const num = id => { const v = document.getElementById(id).value; return v===''?null:parseFloat(v); };
+    profile = {
+      age: num('f_age'), weight: num('f_weight'),
+      run: {paceKmh: num('f_paceKmh')||7.5, minutes: num('f_runMin')||20},
+      baselines: {sledPull:num('f_sledPull'), kbCarry:num('f_kbCarry'), boxJump:num('f_boxJump'), lungeWalk:num('f_lungeWalk')},
+      painBaseline: num('f_painBaseline')||0,
+      history: {}
+    };
+    try{ await db.doc('profile/main').set(profile); }catch(e){}
+    renderToday(); renderWeek(); renderProgress();
+  });
+}
+
+// ================= TODAY =================
+async function renderToday(){
+  if(!profile){ renderAssessment(); return; }
+  await renderMorningCheck();
+  const now = new Date();
+  let di = dayIndexFromStart(now); if(di<0) di=0;
+  currentSession = generateDay(di, profile, settings.clearedOverhead, settings.cautionFlag);
+  const dstrKey = dstr(currentSession.date);
+  const card = document.getElementById('todayCard');
+
+  let html = '<div class="row-between"><h2>'+currentSession.title+'</h2></div>';
+  html += '<p class="muted" style="margin-top:4px;">'+currentSession.focus+'</p>';
+  currentSession.exercises.forEach((ex,i)=>{
+    let badge='';
+    if(ex.caution) badge='<span class="badge caution">shoulder load</span>';
+    else if(ex.substitute) badge='<span class="badge sub">substituted</span>';
+    if(ex.calc) badge+=' <span class="badge calc">from your baseline</span>';
+    html += '<div class="exercise"><div class="exercise-name">'+ex.name+' '+badge+'</div><div class="exercise-detail">'+ex.detail+'</div>'+
+      '<div class="exercise-controls"><label class="chk"><input type="checkbox" data-idx="'+i+'" class="exdone"> Done</label>'+
+      '<input type="text" class="actual-input" data-idx="'+i+'" placeholder="Actual load/reps (optional)"></div></div>';
+  });
+
+  html += '<div class="slider-row" style="margin-top:14px;"><label>Pushing/overhead-pattern shoulder pain today <span class="slider-value" id="painVal">1</span>/10</label><input type="range" min="0" max="10" value="1" id="painSlider"></div>'+
+    '<div class="slider-row"><label>Session RPE — overall effort (Borg CR10: 0 rest, 10 max effort) <span class="slider-value" id="rpeVal">5</span>/10</label><input type="range" min="0" max="10" value="5" id="rpeSlider"></div>'+
+    '<textarea id="sessionNote" placeholder="Anything to note — energy, tightness, where it hurt, how it compares to yesterday…"></textarea>'+
+    '<button class="primary" id="saveSessionBtn" style="margin-top:12px;">Save session</button>'+
+    '<button class="secondary" id="adviceBtn" style="margin-top:8px;">Get coach\'s adjustment</button>'+
+    '<div id="adviceOut"></div>'+
+    '<div class="note-banner">This isn\'t a substitute for your physio. If pain sharpens, or you feel instability or numbness, stop and get it checked in person.</div>';
+
+  card.innerHTML = html;
+  document.getElementById('painSlider').addEventListener('input', e=>document.getElementById('painVal').textContent=e.target.value);
+  document.getElementById('rpeSlider').addEventListener('input', e=>document.getElementById('rpeVal').textContent=e.target.value);
+  document.getElementById('saveSessionBtn').addEventListener('click', ()=>saveSession(dstrKey));
+  document.getElementById('adviceBtn').addEventListener('click', ()=>getAdvice(dstrKey));
+
+  try{
+    const snap = await db.doc('sessions/'+dstrKey).get();
+    if(snap.exists){
+      const d = snap.data();
+      if(d.pain!==undefined){ document.getElementById('painSlider').value=d.pain; document.getElementById('painVal').textContent=d.pain; }
+      if(d.rpe!==undefined){ document.getElementById('rpeSlider').value=d.rpe; document.getElementById('rpeVal').textContent=d.rpe; }
+      if(d.note) document.getElementById('sessionNote').value = d.note;
+      if(d.exercises) d.exercises.forEach((e,i)=>{
+        const cb=document.querySelector('.exdone[data-idx="'+i+'"]'), inp=document.querySelector('.actual-input[data-idx="'+i+'"]');
+        if(cb && e.done) cb.checked=true; if(inp && e.actual) inp.value=e.actual;
+      });
+      if(d.advice) showAdvice(d.advice);
+    }
+  }catch(e){}
+}
+
+async function renderMorningCheck(){
+  const slot = document.getElementById('morningCheckSlot');
+  slot.innerHTML='';
+  const now = new Date();
+  const yestKey = dstr(addDays(now,-1));
+  try{
+    const snap = await db.doc('sessions/'+yestKey).get();
+    if(!snap.exists) return;
+    const d = snap.data();
+    if(d.pain===undefined || d.pain<3 || d.pain>5 || d.morningCheck) return; // only for the 3-5 monitor band, once
+    slot.innerHTML = '<div class="morning-check"><div class="tag">Pain-monitoring check-in</div>'+
+      '<p>Yesterday you logged '+d.pain+'/10 pushing/overhead discomfort. Before moving today — how does it feel?</p>'+
+      '<div class="opts"><button class="chip" data-v="baseline">Back to baseline</button><button class="chip" data-v="still">Still there</button><button class="chip" data-v="worse">Worse</button></div></div>';
+    slot.querySelectorAll('.chip').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const v = btn.dataset.v;
+      d.morningCheck = v;
+      try{ await db.doc('sessions/'+yestKey).set(d); }catch(e){}
+      if(v!=='baseline'){
+        settings.cautionFlag = true;
+        document.getElementById('cautionToggle').checked = true;
+        try{ await db.doc('settings/main').set(settings); }catch(e){}
+      }
+      renderToday(); renderHero();
+    }));
+  }catch(e){}
+}
+
+function collectSessionData(){
+  const exercises = currentSession.exercises.map((ex,i)=>{
+    const cb=document.querySelector('.exdone[data-idx="'+i+'"]'), inp=document.querySelector('.actual-input[data-idx="'+i+'"]');
+    return {name:ex.name, done: cb?cb.checked:false, actual: inp?inp.value:''};
+  });
+  return {
+    exercises,
+    pain: parseInt(document.getElementById('painSlider').value,10),
+    rpe: parseInt(document.getElementById('rpeSlider').value,10),
+    note: document.getElementById('sessionNote').value
+  };
+}
+
+async function saveSession(dateKey){
+  const data = collectSessionData();
+  const btn = document.getElementById('saveSessionBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  const trainingLoad = data.rpe * (currentSession.durationMin || 40);
+  try{
+    await db.doc('sessions/'+dateKey).set(Object.assign({
+      title: currentSession.title, weekNumber: currentSession.weekNumber, phase: currentSession.phase,
+      durationMin: currentSession.durationMin, trainingLoad, savedAt: new Date().toISOString()
+    }, data));
+    btn.textContent='Saved ✓';
+    renderProgress(); renderHero();
+  }catch(e){ btn.textContent='Save failed — try again'; }
+  setTimeout(()=>{ btn.disabled=false; if(btn.textContent!=='Save failed — try again') btn.textContent='Save session'; },1500);
+}
+
+async function getAdvice(dateKey){
+  const data = collectSessionData();
+  const btn = document.getElementById('adviceBtn');
+  btn.disabled=true; btn.textContent='Thinking…';
+  let result;
+  if(sample){
+    const doneList = data.exercises.filter(e=>e.done).map(e=>e.name+(e.actual?' ('+e.actual+')':'')).join('; ')||'nothing marked done';
+    const prompt = 'You are a cautious training assistant in a fitness app for someone training for The Yoddha Race (Mumbai, Nov 2026) while rehabbing a right AC joint injury. '
+      +'Context: pain shows on pushing/overhead, not pulling; a physio identified weak serratus anterior and lower traps; they follow a separate physio rehab program alongside this. '
+      +'You are NOT a doctor, never diagnose. If it sounds like it needs in-person assessment (sharp pain, instability, numbness, worsening trend, night pain), say so and recommend their physio.\n\n'
+      +'This app uses a pain-monitoring model: 0-2 safe, 3-5 acceptable-but-monitor (check next morning), 6+ stop pushing. Apply that logic.\n\n'
+      +'Today: Week '+currentSession.weekNumber+', '+currentSession.phase+' phase, "'+currentSession.title+'". Exercises done: '+doneList+'. Pain: '+data.pain+'/10. Session RPE: '+data.rpe+'/10. Note: "'+(data.note||'none')+'"\n\n'
+      +'Reply with ONLY JSON: {"status":"good"|"monitor"|"stop_pushing","message":"2-3 short practical sentences","flagCaution":true|false}.';
+    try{ result = await sample.json(prompt, {modelTier:'default', cache:false}); }
+    catch(e){ result = localAdvice(data); result.message += ' (AI unreachable — used local check.)'; }
+  } else { result = localAdvice(data); }
+
+  showAdvice(result);
+  const trainingLoad = data.rpe * (currentSession.durationMin || 40);
+  try{
+    await db.doc('sessions/'+dateKey).set(Object.assign({advice:result}, data, {
+      title: currentSession.title, weekNumber: currentSession.weekNumber, phase: currentSession.phase,
+      durationMin: currentSession.durationMin, trainingLoad, savedAt: new Date().toISOString()
+    }));
+  }catch(e){}
+  if(result.flagCaution){
+    settings.cautionFlag=true; document.getElementById('cautionToggle').checked=true;
+    try{ await db.doc('settings/main').set(settings); }catch(e){}
+  }
+  btn.textContent='Get coach\'s adjustment'; btn.disabled=false;
+  renderProgress(); renderHero();
+}
+
+function showAdvice(result){
+  const cls = result.status==='stop_pushing'?'caution':(result.status==='monitor'?'amber':'');
+  const tag = result.status==='stop_pushing'?'Pause pushing':(result.status==='monitor'?'Monitor':'On track');
+  document.getElementById('adviceOut').innerHTML = '<div class="advice-card '+cls+'"><div class="tag">'+tag+'</div><p>'+result.message+'</p></div>';
+}
+
+// ================= WEEK =================
+function renderWeek(){
+  if(!profile) return;
+  const now = new Date();
+  let di = dayIndexFromStart(now); if(di<0) di=0;
+  const weekStart = di-(di%7), wi = Math.floor(di/7);
+  document.getElementById('weekTitle').textContent = 'Week '+(wi+1);
+  const list = document.getElementById('weekList');
+  let html='';
+  for(let i=0;i<7;i++){
+    const idx = weekStart+i;
+    const s = generateDay(idx, profile, settings.clearedOverhead, settings.cautionFlag);
+    html += '<div class="week-day'+(idx===di?' today':'')+'" data-key="'+dstr(s.date)+'"><div class="idx">'+(i+1)+'</div><div class="info"><div class="title">'+s.title+'</div><div class="sub">'+fmtDate(s.date)+'</div></div></div>';
+  }
+  list.innerHTML = html;
+  for(let i=0;i<7;i++){
+    const idx = weekStart+i;
+    const s = generateDay(idx, profile, settings.clearedOverhead, settings.cautionFlag);
+    const key = dstr(s.date);
+    db.doc('sessions/'+key).get().then(snap=>{
+      if(snap.exists && snap.data().exercises && snap.data().exercises.some(e=>e.done)){
+        const el = list.querySelector('[data-key="'+key+'"]'); if(el) el.classList.add('done');
+      }
+    }).catch(()=>{});
+  }
+}
+
+// ================= ZONES =================
+function renderZones(){
+  document.getElementById('zoneList').innerHTML = RACE_ZONES.map(z=>
+    '<div class="zone-row"><div class="zn">'+z.n+'</div><div class="zt">'+z.spec+'<br><a href="https://www.youtube.com/results?search_query='+encodeURIComponent(z.yt)+'" target="_blank" rel="noopener">form cues ↗</a></div></div>'
+  ).join('');
+}
+
+// ================= PROGRESS =================
+async function renderProgress(){
+  if(!profile){ document.getElementById('readinessBars').innerHTML='<div class="empty">Complete your baseline test first (Today tab).</div>'; return; }
+
+  // Readiness bars
+  const rb = document.getElementById('readinessBars');
+  rb.innerHTML = RACE_ZONES.filter(z=>z.target!=null).map(z=>{
+    const val = (profile.baselines && profile.baselines[z.key]!=null) ? profile.baselines[z.key] : null;
+    const pct = val==null ? 0 : clamp(Math.round(val/z.target*100),0,100);
+    return '<div class="bar-row"><div class="lbl"><span>'+z.n.replace(/^\d+\.\s*/,'')+'</span><b>'+(val==null?'not tested':val+(z.unit?z.unit:'')+' / '+z.target+(z.unit?z.unit:''))+'</b></div>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';
+  }).join('');
+
+  document.getElementById('retestBtn').onclick = ()=>{
+    const f = document.getElementById('retestForm');
+    if(f.style.display==='block'){ f.style.display='none'; return; }
+    f.style.display='block';
+    f.innerHTML = '<div class="field"><label>Zone</label><select id="retestZone">'+RACE_ZONES.filter(z=>z.target!=null).map(z=>'<option value="'+z.key+'">'+z.n.replace(/^\d+\.\s*/,'')+'</option>').join('')+'</select></div>'+
+      '<div class="field"><label>New tested value ('+'kg/cm depending on zone)</label><input type="number" id="retestVal"></div>'+
+      '<button class="primary" id="retestSave">Save retest</button>';
+    document.getElementById('retestSave').onclick = async ()=>{
+      const key = document.getElementById('retestZone').value;
+      const val = parseFloat(document.getElementById('retestVal').value);
+      if(isNaN(val)) return;
+      profile.baselines = profile.baselines||{};
+      profile.baselines[key] = val;
+      profile.history = profile.history||{};
+      profile.history[key] = profile.history[key]||[];
+      profile.history[key].push({date:dstr(new Date()), value:val});
+      try{ await db.doc('profile/main').set(profile); }catch(e){}
+      f.style.display='none';
+      renderProgress(); renderToday(); renderWeek();
+    };
+  };
+
+  // Sessions / ACWR / pain
+  let docs=[];
+  try{
+    const q = await db.collection('sessions').orderBy('savedAt','desc').limit(60).get();
+    docs = q.docs.map(d=>({id:d.id, data:d.data()})).reverse();
+  }catch(e){}
+
+  const completed = docs.filter(d=>d.data.exercises && d.data.exercises.some(e=>e.done));
+  let streak=0;
+  for(let i=completed.length-1;i>=0;i--){ if(completed[i].data.exercises.some(e=>e.done)) streak++; else break; }
+  document.getElementById('statRow').innerHTML =
+    '<div class="stat-box"><div class="n">'+completed.length+'</div><div class="l">sessions logged</div></div>'+
+    '<div class="stat-box"><div class="n">'+streak+'</div><div class="l">current streak</div></div>';
+
+  const last14 = docs.filter(d=>d.data.pain!==undefined).slice(-14);
+  const painChart = document.getElementById('painChart');
+  if(last14.length===0){ painChart.innerHTML='<div class="empty" style="width:100%;">Log a session to see your trend</div>'; }
+  else{
+    painChart.innerHTML = last14.map(d=>{
+      const p=d.data.pain, h=Math.max(4,p*8);
+      const cls = p>=6?'high':(p>=3?'amber':'');
+      return '<div class="pain-bar '+cls+'" style="height:'+h+'px" title="'+p+'/10"></div>';
+    }).join('');
+  }
+
+  document.getElementById('progressList').innerHTML = docs.slice().reverse().slice(0,10).map(d=>
+    '<div class="exercise"><div class="exercise-name">'+d.data.title+'</div><div class="exercise-detail">'+d.id+' · pain '+(d.data.pain!==undefined?d.data.pain+'/10':'—')+' · RPE '+(d.data.rpe!==undefined?d.data.rpe+'/10':'—')+'</div></div>'
+  ).join('') || '<div class="empty">No sessions logged yet</div>';
+
+  document.getElementById('exportBtn').onclick = ()=>exportCSV(docs);
+
+  // ACWR
+  const now = new Date();
+  function loadSum(daysBack){
+    const cutoff = addDays(now,-daysBack);
+    return docs.filter(d=>new Date(d.id) >= cutoff && d.data.trainingLoad).reduce((s,d)=>s+d.data.trainingLoad,0);
+  }
+  const acute = loadSum(7);
+  const chronic28 = loadSum(28);
+  const chronicWeekly = chronic28/4;
+  const acwr = chronicWeekly>0 ? (acute/chronicWeekly) : null;
+  const gauge = document.getElementById('acwrGauge');
+  const pill = document.getElementById('acwrPill');
+  if(acwr==null){
+    gauge.innerHTML = '<p class="muted">Log a few more sessions to compute this — needs at least a week or two of history.</p>';
+    pill.textContent='ACWR —'; pill.className='phase-pill';
+  } else {
+    const pos = clamp(acwr/2,0,1)*100; // scale 0-2 across width
+    let zoneClass='acwr-ok';
+    if(acwr>1.5 || acwr<0.5) zoneClass='acwr-high';
+    else if(acwr>1.3 || acwr<0.8) zoneClass='acwr-caution';
+    pill.textContent = 'ACWR '+acwr.toFixed(2);
+    pill.className = 'phase-pill '+zoneClass;
+    gauge.innerHTML =
+      '<div class="gauge-track">'+
+        '<div class="gauge-seg" style="width:40%;background:var(--amber-bg);"></div>'+
+        '<div class="gauge-seg" style="width:25%;background:var(--safe-bg);"></div>'+
+        '<div class="gauge-seg" style="width:10%;background:var(--safe-bg);"></div>'+
+        '<div class="gauge-seg" style="width:10%;background:var(--amber-bg);"></div>'+
+        '<div class="gauge-seg" style="width:15%;background:var(--caution-bg);"></div>'+
+        '<div class="gauge-marker" style="left:'+pos+'%;"></div>'+
+      '</div>'+
+      '<div class="gauge-labels"><span>0</span><span>0.8</span><span>1.3</span><span>1.5</span><span>2.0</span></div>'+
+      '<p class="muted" style="margin-top:8px;">Current ratio: <b style="color:var(--text)">'+acwr.toFixed(2)+'</b> — '+
+      (acwr>1.5?'above the commonly-cited high-risk threshold (Gabbett, 2016). Consider an easier next few days.':
+       acwr<0.5?'quite low — you may be detraining; a slight ramp-up is reasonable.':
+       'within the commonly-referenced 0.8–1.3 "sweet spot" or close to it.')+'</p>';
+  }
+}
+
+async function exportCSV(docs){
+  let csv = 'date,title,pain,rpe,trainingLoad,note,exercises_done\n';
+  docs.forEach(d=>{
+    const done=(d.data.exercises||[]).filter(e=>e.done).map(e=>e.name).join('|');
+    const note=(d.data.note||'').replace(/"/g,'""');
+    csv += d.id+',"'+d.data.title+'",'+(d.data.pain??'')+','+(d.data.rpe??'')+','+(d.data.trainingLoad??'')+',"'+note+'","'+done+'"\n';
+  });
+  if(downloads){ try{ await downloads.save({filename:'yoddha-training-log.csv', data:csv}); return; }catch(e){} }
+  try{
+    const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='yoddha-training-log.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }catch(e){ alert('Couldn\'t export right now.'); }
+}
+
+async function resetAll(){
+  if(!confirm('Delete all logged sessions, your baseline profile, and settings? This can\'t be undone.')) return;
+  try{
+    const q = await db.collection('sessions').limit(1000).get();
+    for(const d of q.docs){ await db.doc('sessions/'+d.id).delete(); }
+    await db.doc('profile/main').delete().catch(()=>{});
+    settings={clearedOverhead:false, cautionFlag:false};
+    await db.doc('settings/main').set(settings);
+    profile=null;
+    document.getElementById('clearedToggle').checked=false;
+    document.getElementById('cautionToggle').checked=false;
+    renderAssessment(); renderWeek(); renderProgress(); renderHero();
+  }catch(e){}
+}
+
+// ================= TABS =================
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='progress') renderProgress();
+  });
+});
+
+// ================= TIMER =================
+let timerSeconds=0, timerInterval=null, timerRunning=false;
+function updateTimerDisplay(){ const m=Math.floor(timerSeconds/60), s=timerSeconds%60; document.getElementById('timerDisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+document.getElementById('timerFab').addEventListener('click', ()=>document.getElementById('timerPanel').classList.toggle('open'));
+document.querySelectorAll('.timer-presets button').forEach(b=>b.addEventListener('click', ()=>{ timerSeconds=parseInt(b.dataset.s,10); updateTimerDisplay(); }));
+document.getElementById('timerStart').addEventListener('click', ()=>{
+  if(timerRunning){ clearInterval(timerInterval); timerRunning=false; document.getElementById('timerStart').textContent='Start'; }
+  else{
+    if(timerSeconds<=0) timerSeconds=60;
+    timerRunning=true; document.getElementById('timerStart').textContent='Pause';
+    timerInterval=setInterval(()=>{
+      timerSeconds--; updateTimerDisplay();
+      if(timerSeconds<=0){ clearInterval(timerInterval); timerRunning=false; document.getElementById('timerStart').textContent='Start'; if(navigator.vibrate) navigator.vibrate([200,100,200]); }
+    },1000);
+  }
+});
+document.getElementById('timerReset').addEventListener('click', ()=>{ clearInterval(timerInterval); timerRunning=false; timerSeconds=0; document.getElementById('timerStart').textContent='Start'; updateTimerDisplay(); });
+updateTimerDisplay();
+
+init();
+})();
+</script>
+</body>
+</html>
